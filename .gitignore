@@ -1,0 +1,10 @@
+
+# Personal Command Code configuration
+/.commandcode/settings.local.json
+/.commandcode/hooks/require-rtk.py
+/.commandcode/**/*.bak.*
+__pycache__/
+.venv/
+*env*
+# Node modules
+node_modules/

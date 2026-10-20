@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "commandcode-init"
+version = "0.1.0"
+description = "Initialize project-local Command Code settings and hooks"
+requires-python = ">=3.9"
+dependencies = []
+
+[project.scripts]
+cc-init = "commandcode_init.cli:main"
+commandcode-init = "commandcode_init.cli:main"
+
+[tool.setuptools.package-data]
+commandcode_init = ["templates/*.json", "templates/*.py"]

@@ -1,0 +1,73 @@
+{
+  "permissions": {
+    "defaultMode": "yolo",
+    "deny": [
+      "Read(.env*)",
+      "Read(secrets)",
+      "Read(secrets/**)",
+      "Read(.secrets)",
+      "Read(.secrets/**)",
+      "Read(*.pem)",
+      "Read(*.key)",
+      "Read(*.p12)",
+      "Read(*.pfx)",
+      "Read(id_rsa*)",
+      "Read(id_ed25519*)",
+      "Read(~/.ssh)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws)",
+      "Read(~/.aws/**)",
+      "Read(~/.gnupg)",
+      "Read(~/.gnupg/**)",
+      "Read(~/.kube)",
+      "Read(~/.kube/**)",
+      "Read(~/.azure)",
+      "Read(~/.azure/**)",
+      "Read(~/.config/gcloud)",
+      "Read(~/.config/gcloud/**)",
+      "Read(~/.docker/config.json)",
+      "Read(~/.git-credentials)",
+      "Read(~/.npmrc)",
+      "Read(~/.pypirc)",
+      "Read(~/.netrc)",
+      "Edit(.env*)",
+      "Edit(secrets/**)",
+      "Edit(.secrets/**)",
+      "Edit(~/.ssh/**)",
+      "Edit(~/.aws/**)",
+      "Edit(~/.gnupg/**)",
+      "Edit(~/.kube/**)",
+      "Edit(~/.azure/**)",
+      "Edit(~/.config/gcloud/**)",
+      "Edit(~/.docker/config.json)",
+      "Edit(~/.git-credentials)",
+      "Edit(~/.npmrc)",
+      "Edit(~/.pypirc)",
+      "Edit(~/.netrc)",
+      "Edit(.commandcode/settings.json)",
+      "Edit(.commandcode/settings.local.json)"
+    ],
+    "ask": [
+      "Shell(git push:*)",
+      "Shell(rtk git push:*)",
+      "Shell(git -C * push*)",
+      "Shell(rtk git -C * push*)",
+      "Shell(rtk bypass git push:*)",
+      "Shell(rtk proxy git push:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "shell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \".commandcode/hooks/require-rtk.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
