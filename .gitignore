@@ -8,3 +8,4 @@ __pycache__/
 *env*
 # Node modules
 node_modules/
+.commandcode/

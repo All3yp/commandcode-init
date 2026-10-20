@@ -1,6 +1,7 @@
 import argparse
 import json
 import shlex
+import shutil
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -8,11 +9,23 @@ from importlib.resources import files
 from pathlib import Path
 
 
+def install_uv():
+    if sys.platform == "win32":
+        command = ["powershell", "-ExecutionPolicy", "ByPass", "-c", "irm https://astral.sh/uv/install.ps1 | iex"]
+    else:
+        command = ["sh", "-c", "curl -LsSf https://astral.sh/uv/install.sh | sh"]
+    print("Installing uv...")
+    subprocess.run(command, check=True)
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Initialize project-local Command Code settings and hooks.")
+    parser = argparse.ArgumentParser(prog="cc-init", description="Initialize project-local Command Code settings and hooks.")
     parser.add_argument("directory", nargs="?", default=".")
     parser.add_argument("--force", action="store_true", help="Replace existing files, keeping backups")
     parser.add_argument("--no-gitignore", action="store_true")
+    parser.add_argument("--venv", action="store_true", help="Create a .venv in the target directory (uv, falling back to python -m venv)")
+    parser.add_argument("--install-uv", action="store_true", dest="install_uv", help="Install uv if it is not already on PATH")
+    parser.add_argument("--uv-init", action="store_true", dest="uv_init", help="Run `uv init` in the target directory (for Python projects)")
     ns = parser.parse_args()
     root = Path(ns.directory).expanduser().resolve()
     root.mkdir(parents=True, exist_ok=True)
@@ -48,6 +61,43 @@ def main():
             with ignore.open("a", encoding="utf-8") as f:
                 f.write(separator + "\n# Personal Command Code configuration\n" + "\n".join(missing) + "\n")
             print(f"UPDATE  {ignore}")
+    if ns.install_uv:
+        sys.stdout.flush()
+        if shutil.which("uv") is None:
+            try:
+                install_uv()
+            except (FileNotFoundError, subprocess.CalledProcessError) as exc:
+                print(f"Error: uv installation failed ({exc}).", file=sys.stderr)
+                sys.exit(1)
+        else:
+            print("uv is already installed.")
+    if ns.uv_init:
+        sys.stdout.flush()
+        uv = shutil.which("uv")
+        if uv is None:
+            print("Error: uv was not found in PATH. Pass --install-uv to install uv.", file=sys.stderr)
+            sys.exit(1)
+        try:
+            subprocess.run([uv, "init"], cwd=root, check=True)
+        except subprocess.CalledProcessError as exc:
+            print(f"Error: `uv init` failed with exit code {exc.returncode}.", file=sys.stderr)
+            sys.exit(exc.returncode)
+    if ns.venv:
+        sys.stdout.flush()
+        uv = shutil.which("uv")
+        try:
+            if uv:
+                subprocess.run([uv, "venv"], cwd=root, check=True)
+            else:
+                print(
+                    "uv was not found in PATH; falling back to `python -m venv`. "
+                    "Pass --install-uv to install uv.",
+                    file=sys.stderr,
+                )
+                subprocess.run([sys.executable, "-m", "venv", ".venv"], cwd=root, check=True)
+        except subprocess.CalledProcessError as exc:
+            print(f"Error: virtual environment creation failed with exit code {exc.returncode}.", file=sys.stderr)
+            sys.exit(exc.returncode)
     print("Done. Existing global Command Code settings still apply.")
 
 
